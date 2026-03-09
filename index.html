@@ -963,6 +963,8 @@
   }
 
   // ── Identity — applied HERE, after chat vars & helpers are ready ───
+  let chatListenerStarted = false;
+
   function applyIdentity(id) {
     myIdentity = id;
     localStorage.setItem('stc_identity', id);
@@ -981,6 +983,32 @@
     activeSender = id;
     chatInput.placeholder = id === 'kavana' ? 'Kavana says…' : 'Abhinav says…';
     updateSendBtn();
+
+    // Start the chat listener NOW that identity is known
+    // (ensures myIdentity is set before any message is rendered)
+    if (!chatListenerStarted) {
+      chatListenerStarted = true;
+      startChatListener();
+    }
+  }
+
+  function startChatListener() {
+    const chatQuery = query(ref(db, 'chat'), limitToLast(60));
+    onChildAdded(chatQuery, snap => {
+      const msg = Object.assign({ key: snap.key }, snap.val());
+      chatEmpty.style.display = 'none';
+      appendBubble(msg);
+      if (!chatOpen) {
+        unreadCount++;
+        updateUnread();
+      } else {
+        scrollChatBottom();
+        unreadCount = 0;
+        updateUnread();
+      }
+    }, err => {
+      console.error('[Chat] onChildAdded error:', err.code, err.message);
+    });
   }
 
   const idOverlay = document.getElementById('idOverlay');
@@ -999,29 +1027,6 @@
     applyIdentity('abhinav');
   });
 
-  // ── Firebase: chat (onChildAdded fires once per message, no dedup needed) ──
-  const chatQuery = query(ref(db, 'chat'), limitToLast(60));
-  let chatLoaded  = false;  // becomes true after initial batch renders
-
-  onChildAdded(chatQuery, snap => {
-    const msg = Object.assign({ key: snap.key }, snap.val());
-
-    // Hide empty state on first real message
-    chatEmpty.style.display = 'none';
-
-    appendBubble(msg);
-
-    if (!chatOpen) {
-      unreadCount++;
-      updateUnread();
-    } else {
-      scrollChatBottom();
-      unreadCount = 0;
-      updateUnread();
-    }
-  }, err => {
-    console.error('[Chat] onChildAdded error:', err.code, err.message);
-  });
 
   function appendBubble(msg) {
     // Show the current user's own messages on the right, the other person on the left
