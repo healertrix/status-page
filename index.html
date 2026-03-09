@@ -1,730 +1,517 @@
 <!DOCTYPE html>
-<html lang="hi">
-
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Call Kare Kya? 📞</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Safe to Call?</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0a0a14;
-      --surface: #11111e;
-      --surface2: #181828;
-      --border: rgba(255, 255, 255, 0.07);
-      --text: #f0f0fa;
-      --muted: #5a5a88;
-      --green: #22c55e;
-      --green-dim: rgba(34, 197, 94, 0.1);
-      --green-glow: rgba(34, 197, 94, 0.4);
-      --red: #ef4444;
-      --red-dim: rgba(239, 68, 68, 0.1);
-      --red-glow: rgba(239, 68, 68, 0.4);
-      --yellow: #f59e0b;
+      --bg:        #08080f;
+      --surface:   #101018;
+      --surface2:  #17171f;
+      --border:    rgba(255,255,255,0.07);
+      --text:      #f0f0f8;
+      --muted:     #55557a;
+      --green:     #22c55e;
+      --green-dim: rgba(34,197,94,0.11);
+      --red:       #ef4444;
+      --red-dim:   rgba(239,68,68,0.11);
+      --amber:     #f59e0b;
+      --indigo:    #6366f1;
     }
 
-    html,
+    html { -webkit-tap-highlight-color: transparent; }
+
     body {
-      min-height: 100vh;
-      font-family: 'Nunito', sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      min-height: 100vh; min-height: 100dvh;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg); color: var(--text);
     }
 
-    /* ambient blobs */
-    .blob {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(100px);
-      pointer-events: none;
-      z-index: 0;
-      transition: background 1s;
+    .glow {
+      position: fixed; border-radius: 50%;
+      filter: blur(90px); pointer-events: none; z-index: 0;
+      transition: background 0.9s;
     }
+    .glow-a { width: 55vw; height: 55vw; max-width: 420px; max-height: 420px; top: -12%; left: -12%; }
+    .glow-b { width: 45vw; height: 45vw; max-width: 360px; max-height: 360px; bottom: -10%; right: -10%; }
+    body.st-safe   .glow-a, body.st-safe   .glow-b  { background: radial-gradient(circle, rgba(34,197,94,0.1),  transparent 70%); }
+    body.st-danger .glow-a, body.st-danger .glow-b  { background: radial-gradient(circle, rgba(239,68,68,0.1),  transparent 70%); }
+    body.st-wait   .glow-a { background: radial-gradient(circle, rgba(245,158,11,0.08), transparent 70%); }
+    body.st-wait   .glow-b { background: radial-gradient(circle, rgba(245,158,11,0.05), transparent 70%); }
 
-    .blob-1 {
-      width: 500px;
-      height: 500px;
-      top: -200px;
-      left: -100px;
-    }
-
-    .blob-2 {
-      width: 400px;
-      height: 400px;
-      bottom: -100px;
-      right: -100px;
-    }
-
-    body.all-ok .blob-1 {
-      background: radial-gradient(circle, rgba(34, 197, 94, 0.08), transparent 70%);
-    }
-
-    body.all-ok .blob-2 {
-      background: radial-gradient(circle, rgba(34, 197, 94, 0.05), transparent 70%);
-    }
-
-    body.danger .blob-1 {
-      background: radial-gradient(circle, rgba(239, 68, 68, 0.08), transparent 70%);
-    }
-
-    body.danger .blob-2 {
-      background: radial-gradient(circle, rgba(239, 68, 68, 0.05), transparent 70%);
-    }
-
-    body.pending .blob-1 {
-      background: radial-gradient(circle, rgba(245, 158, 11, 0.07), transparent 70%);
-    }
-
-    body.pending .blob-2 {
-      background: radial-gradient(circle, rgba(245, 158, 11, 0.04), transparent 70%);
-    }
-
-    /* layout */
     .page {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 32px 20px 48px;
-      gap: 28px;
+      position: relative; z-index: 1;
+      min-height: 100vh; min-height: 100dvh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px 16px 40px; gap: 14px;
     }
 
-    /* connection badge */
-    .conn-badge {
-      position: fixed;
-      top: 16px;
-      right: 16px;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 6px 14px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: var(--muted);
-      z-index: 50;
-      transition: all 0.4s;
+    /* live badge */
+    .live-badge {
+      position: fixed; top: 14px; right: 14px;
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 999px; font-size: 0.7rem; font-weight: 700;
+      color: var(--muted); z-index: 50; transition: all 0.4s;
     }
+    .live-badge.on  { color: var(--green); border-color: rgba(34,197,94,0.35); }
+    .live-badge.off { color: var(--red);   border-color: rgba(239,68,68,0.25); }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .live-badge.on .live-dot { animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
-    .conn-badge.connected {
-      color: var(--green);
-      border-color: rgba(34, 197, 94, 0.3);
-    }
-
-    .conn-badge.disconnected {
-      color: var(--red);
-      border-color: rgba(239, 68, 68, 0.25);
-    }
-
-    .conn-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-
-    .conn-badge.connected .conn-dot {
-      animation: connPulse 2s infinite;
-    }
-
-    @keyframes connPulse {
-
-      0%,
-      100% {
-        opacity: 1
-      }
-
-      50% {
-        opacity: 0.3
-      }
-    }
-
-    /* main banner */
+    /* banner */
     .banner {
-      width: 100%;
-      max-width: 600px;
-      border-radius: 24px;
-      padding: 36px 32px;
-      text-align: center;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      transition: all 0.6s;
-      position: relative;
-      overflow: hidden;
+      width: 100%; max-width: 480px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: clamp(26px,6vw,42px) clamp(20px,5vw,36px);
+      text-align: center; position: relative; overflow: hidden;
+      transition: border-color 0.5s, box-shadow 0.5s;
     }
-
     .banner::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 24px;
-      opacity: 0;
-      transition: opacity 0.6s;
-      pointer-events: none;
+      content: ''; position: absolute; inset: 0; border-radius: 22px;
+      pointer-events: none; opacity: 0; transition: opacity 0.5s;
     }
+    .banner.safe   { border-color: rgba(34,197,94,0.25); box-shadow: 0 0 48px rgba(34,197,94,0.06); }
+    .banner.safe::before   { background: radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.09), transparent 65%); opacity:1; }
+    .banner.danger { border-color: rgba(239,68,68,0.25); box-shadow: 0 0 48px rgba(239,68,68,0.06); }
+    .banner.danger::before { background: radial-gradient(ellipse at 50% 0%, rgba(239,68,68,0.09), transparent 65%); opacity:1; }
+    .banner.wait   { border-color: rgba(245,158,11,0.2); }
 
-    .banner.safe {
-      border-color: rgba(34, 197, 94, 0.3);
-      box-shadow: 0 0 60px rgba(34, 197, 94, 0.07);
+    .banner-emoji {
+      font-size: clamp(2.4rem,8vw,3.5rem); display: block; margin-bottom: 12px;
+      animation: float 3.5s ease-in-out infinite;
     }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
 
-    .banner.safe::before {
-      background: radial-gradient(ellipse at center, rgba(34, 197, 94, 0.07), transparent 70%);
-      opacity: 1;
+    .banner-label {
+      font-size: 0.62rem; font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 10px;
     }
-
-    .banner.danger {
-      border-color: rgba(239, 68, 68, 0.3);
-      box-shadow: 0 0 60px rgba(239, 68, 68, 0.07);
-    }
-
-    .banner.danger::before {
-      background: radial-gradient(ellipse at center, rgba(239, 68, 68, 0.07), transparent 70%);
-      opacity: 1;
-    }
-
-    .banner.wait {
-      border-color: rgba(245, 158, 11, 0.25);
-    }
-
-    .banner-icon {
-      font-size: 3.5rem;
-      display: block;
-      margin-bottom: 14px;
-      animation: floaty 3s ease-in-out infinite;
-    }
-
-    @keyframes floaty {
-
-      0%,
-      100% {
-        transform: translateY(0)
-      }
-
-      50% {
-        transform: translateY(-8px)
-      }
-    }
-
     .banner-title {
-      font-size: 2rem;
-      font-weight: 900;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
-      margin-bottom: 8px;
+      font-size: clamp(1.5rem,6vw,2.1rem); font-weight: 900;
+      letter-spacing: -0.035em; line-height: 1.1; margin-bottom: 8px;
+      transition: color 0.5s;
     }
-
-    .banner-title.safe {
-      color: var(--green);
-    }
-
-    .banner-title.danger {
-      color: var(--red);
-    }
-
-    .banner-title.wait {
-      color: var(--yellow);
-    }
+    .banner-title.safe   { color: var(--green); }
+    .banner-title.danger { color: #fca5a5; }
+    .banner-title.wait   { color: var(--amber); }
 
     .banner-sub {
-      font-size: 0.95rem;
-      color: var(--muted);
-      font-weight: 600;
+      font-size: clamp(0.82rem,3vw,0.9rem);
+      color: var(--muted); font-weight: 500; line-height: 1.5;
     }
 
-    /* person cards */
+    /* cards */
     .cards {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      width: 100%;
-      max-width: 600px;
+      width: 100%; max-width: 480px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
     }
+    @media (max-width: 380px) { .cards { grid-template-columns: 1fr; } }
 
-    @media (max-width: 500px) {
-      .cards {
-        grid-template-columns: 1fr;
-      }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: clamp(18px,4.5vw,26px) clamp(14px,4vw,22px);
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      position: relative; overflow: hidden;
+      transition: border-color 0.5s;
     }
-
-    .person-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 28px 24px;
-      text-align: center;
-      transition: border-color 0.5s, box-shadow 0.5s;
-      position: relative;
-      overflow: hidden;
+    .card::before {
+      content: ''; position: absolute; inset: 0; border-radius: 18px;
+      pointer-events: none; opacity: 0; transition: opacity 0.5s;
     }
+    .card.ok  { border-color: rgba(34,197,94,0.22); }
+    .card.ok::before  { background: radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.09), transparent 70%); opacity:1; }
+    .card.off { border-color: rgba(239,68,68,0.18); }
+    .card.off::before { background: radial-gradient(ellipse at 50% 0%, rgba(239,68,68,0.07), transparent 70%); opacity:1; }
 
-    .person-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 20px;
-      opacity: 0;
-      transition: opacity 0.5s;
-      pointer-events: none;
-    }
+    .card-avatar { font-size: clamp(2rem,6vw,2.6rem); margin-bottom: 8px; }
+    .card-name   { font-size: clamp(0.9rem,3.5vw,1rem); font-weight: 800; margin-bottom: 6px; }
 
-    .person-card.ok {
-      border-color: rgba(34, 197, 94, 0.25);
-    }
-
-    .person-card.ok::before {
-      background: radial-gradient(ellipse at top, rgba(34, 197, 94, 0.08), transparent 70%);
-      opacity: 1;
-    }
-
-    .person-card.off {
-      border-color: rgba(239, 68, 68, 0.2);
-    }
-
-    .person-card.off::before {
-      background: radial-gradient(ellipse at top, rgba(239, 68, 68, 0.07), transparent 70%);
-      opacity: 1;
-    }
-
-    .person-avatar {
-      font-size: 2.8rem;
-      margin-bottom: 10px;
-      display: block;
-    }
-
-    .person-name {
-      font-size: 1.1rem;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    .person-status-text {
-      font-size: 0.82rem;
-      font-weight: 700;
-      padding: 5px 14px;
-      border-radius: 999px;
-      display: inline-block;
-      margin-bottom: 20px;
-      transition: all 0.5s;
-    }
-
-    .person-status-text.ok {
-      background: var(--green-dim);
-      color: var(--green);
-    }
-
-    .person-status-text.off {
-      background: var(--red-dim);
-      color: var(--red);
-    }
-
-    .person-message {
-      font-size: 0.85rem;
-      color: var(--muted);
-      line-height: 1.5;
-      margin-bottom: 22px;
-      font-weight: 600;
-      min-height: 40px;
+    .card-badge {
+      display: inline-block; font-size: 0.67rem; font-weight: 700;
+      padding: 3px 11px; border-radius: 999px; margin-bottom: 10px;
       transition: all 0.4s;
     }
+    .card-badge.ok  { background: var(--green-dim); color: var(--green); }
+    .card-badge.off { background: var(--red-dim);   color: var(--red);   }
 
-    /* big toggle button */
-    .toggle-btn {
+    .card-msg {
+      font-size: clamp(0.72rem,2.8vw,0.78rem);
+      color: var(--muted); font-weight: 500;
+      line-height: 1.5; margin-bottom: 14px;
+      min-height: 32px; word-break: break-word; width: 100%;
+    }
+
+    /* main tap button */
+    .tap-btn {
       width: 100%;
-      padding: 13px 20px;
-      border: none;
-      border-radius: 12px;
-      font-family: 'Nunito', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 800;
-      cursor: pointer;
-      transition: all 0.25s;
-      letter-spacing: 0.01em;
+      padding: clamp(10px,3vw,13px) 10px;
+      border: none; border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(0.72rem,2.8vw,0.8rem); font-weight: 700;
+      cursor: pointer; transition: all 0.22s;
+      touch-action: manipulation; margin-bottom: 8px;
     }
-
-    .toggle-btn:active {
-      transform: scale(0.97);
-    }
-
-    .toggle-btn.btn-ok {
+    .tap-btn:active { transform: scale(0.96); }
+    .tap-btn.btn-ok {
       background: linear-gradient(135deg, #16a34a, #22c55e);
-      color: white;
-      box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+      color: #fff; box-shadow: 0 4px 18px rgba(34,197,94,0.28);
     }
-
-    .toggle-btn.btn-ok:hover {
-      box-shadow: 0 6px 28px rgba(34, 197, 94, 0.45);
-    }
-
-    .toggle-btn.btn-off {
-      background: var(--surface2);
-      color: var(--muted);
+    .tap-btn.btn-ok:hover { box-shadow: 0 6px 24px rgba(34,197,94,0.42); }
+    .tap-btn.btn-off {
+      background: var(--surface2); color: var(--muted);
       border: 1px solid var(--border);
     }
+    .tap-btn.btn-off:hover { border-color: rgba(255,255,255,0.14); color: var(--text); }
 
-    .toggle-btn.btn-off:hover {
-      border-color: rgba(255, 255, 255, 0.15);
-      color: var(--text);
+    /* edit link — always visible */
+    .edit-link {
+      font-size: 0.65rem; font-weight: 600;
+      color: var(--muted); background: none; border: none;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      padding: 3px 0; text-decoration: underline;
+      text-underline-offset: 2px; transition: color 0.2s;
+    }
+    .edit-link:hover { color: var(--text); }
+
+    .card-meta {
+      font-size: 0.62rem; color: var(--muted);
+      margin-top: 6px; font-weight: 500;
     }
 
-    /* last updated */
-    .meta {
-      font-size: 0.72rem;
-      color: var(--muted);
-      margin-top: 14px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      justify-content: center;
-    }
+    .foot { font-size: 0.7rem; color: var(--muted); opacity: 0.4; text-align: center; }
 
-    /* bottom note */
-    .note {
-      font-size: 0.73rem;
-      color: var(--muted);
-      opacity: 0.5;
-      text-align: center;
+    /* bottom sheet */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      display: flex; align-items: flex-end; justify-content: center;
+      padding: 0 12px 20px; z-index: 100;
+      opacity: 0; pointer-events: none; transition: opacity 0.25s;
     }
+    .overlay.open { opacity: 1; pointer-events: all; }
 
-    /* setup screen */
-    .setup-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 200;
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 32px;
-      gap: 0;
+    .sheet {
+      background: #13131f;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px; padding: 26px 22px 22px;
+      width: 100%; max-width: 440px;
+      transform: translateY(40px);
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
     }
+    .overlay.open .sheet { transform: translateY(0); }
 
-    .setup-screen.hidden {
-      display: none;
+    .sheet-handle {
+      width: 36px; height: 4px; border-radius: 2px;
+      background: var(--border); margin: 0 auto 20px;
     }
+    .sheet-title { font-size: 1rem; font-weight: 800; margin-bottom: 4px; }
+    .sheet-hint  { font-size: 0.78rem; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
 
-    .setup-box {
-      width: 100%;
-      max-width: 480px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 36px 32px;
+    .sheet-input {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px;
+      color: var(--text); font-size: 0.88rem;
+      font-family: 'Inter', sans-serif;
+      outline: none; transition: border-color 0.2s; margin-bottom: 12px;
     }
+    .sheet-input:focus { border-color: rgba(99,102,241,0.55); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
 
-    .setup-box h2 {
-      font-size: 1.5rem;
-      font-weight: 900;
-      margin-bottom: 6px;
-    }
+    .sheet-row { display: flex; gap: 10px; }
 
-    .setup-box p {
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-bottom: 24px;
-      line-height: 1.6;
+    .sheet-save {
+      flex: 1; padding: 13px;
+      background: linear-gradient(135deg, var(--indigo), #818cf8);
+      border: none; border-radius: 10px;
+      color: #fff; font-size: 0.88rem; font-weight: 700;
+      font-family: 'Inter', sans-serif; cursor: pointer; transition: opacity 0.2s;
     }
+    .sheet-save:hover { opacity: 0.9; }
 
-    .setup-field {
-      margin-bottom: 14px;
+    .sheet-cancel {
+      padding: 13px 18px; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 10px;
+      color: var(--muted); font-size: 0.88rem;
+      font-family: 'Inter', sans-serif; cursor: pointer; transition: color 0.2s;
     }
-
-    .setup-field label {
-      display: block;
-      font-size: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-
-    .setup-field input {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 10px 13px;
-      color: var(--text);
-      font-size: 0.85rem;
-      font-family: monospace;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .setup-field input:focus {
-      border-color: rgba(99, 102, 241, 0.5);
-    }
-
-    .setup-btn {
-      width: 100%;
-      padding: 13px;
-      background: linear-gradient(135deg, #6366f1, #818cf8);
-      border: none;
-      border-radius: 10px;
-      color: white;
-      font-size: 0.9rem;
-      font-weight: 800;
-      font-family: 'Nunito', sans-serif;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: opacity 0.2s;
-    }
-
-    .setup-btn:hover {
-      opacity: 0.9;
-    }
-
-    .setup-steps {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
-      font-size: 0.78rem;
-      color: var(--muted);
-      line-height: 1.9;
-    }
-
-    .setup-steps a {
-      color: #818cf8;
-    }
+    .sheet-cancel:hover { color: var(--text); }
 
     /* toast */
     .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(60px);
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 11px 22px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-      z-index: 300;
-      pointer-events: none;
-      opacity: 0;
-      white-space: nowrap;
-      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(70px);
+      background: var(--surface2); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 11px 20px;
+      font-size: 0.82rem; font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      z-index: 200; pointer-events: none; white-space: nowrap; opacity: 0;
+      transition: transform 0.38s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
     }
-
-    .toast.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   </style>
 </head>
+<body class="st-wait">
 
-<body class="pending">
+<div class="glow glow-a"></div>
+<div class="glow glow-b"></div>
 
-  <!-- ambient blobs -->
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
+<div class="live-badge" id="liveBadge">
+  <div class="live-dot"></div>
+  <span id="liveText">Connecting…</span>
+</div>
 
-  <!-- connection indicator -->
-  <div class="conn-badge" id="connBadge">
-    <div class="conn-dot"></div>
-    <span id="connText">Connecting...</span>
+<div class="page">
+
+  <div class="banner wait" id="banner">
+    <span class="banner-emoji" id="bannerEmoji">⏳</span>
+    <div class="banner-label">Current Status</div>
+    <div class="banner-title wait" id="bannerTitle">Loading…</div>
+    <div class="banner-sub" id="bannerSub">Checking…</div>
   </div>
 
+  <div class="cards">
 
-  <!-- Main page -->
-  <div class="page" id="mainPage">
-
-    <!-- Status banner -->
-    <div class="banner wait" id="banner">
-      <span class="banner-icon" id="bannerIcon">⏳</span>
-      <div class="banner-title wait" id="bannerTitle">Loading...</div>
-      <div class="banner-sub" id="bannerSub">Data aa raha hai...</div>
+    <!-- Kavana -->
+    <div class="card off" id="kavanaCard">
+      <div class="card-avatar">👧</div>
+      <div class="card-name">Kavana</div>
+      <span class="card-badge off" id="kavanaBadge">Not Clear</span>
+      <div class="card-msg" id="kavanaMsg">Sis is at home.</div>
+      <button class="tap-btn btn-off" id="kavanaBtn">Tap when sis leaves</button>
+      <button class="edit-link" id="kavanaEdit">✏️ edit this message</button>
+      <div class="card-meta" id="kavanaMeta"></div>
     </div>
 
-    <!-- Person cards -->
-    <div class="cards">
-
-      <!-- Kavana -->
-      <div class="person-card" id="kavanaCard">
-        <span class="person-avatar">👧</span>
-        <div class="person-name">Kavana</div>
-        <span class="person-status-text off" id="kavanaStatusBadge">❌ Not OK</span>
-        <div class="person-message" id="kavanaMsg">Sis abhi ghar pe hai — call mat karo!</div>
-        <button class="toggle-btn btn-off" id="kavanaBtn" onclick="togglePerson('kavana')">
-          Tap karo status update karne ke liye
-        </button>
-        <div class="meta" id="kavanaMeta">—</div>
-      </div>
-
-      <!-- Abhinav -->
-      <div class="person-card" id="abhinavCard">
-        <span class="person-avatar">👦</span>
-        <div class="person-name">Abhinav</div>
-        <span class="person-status-text off" id="abhinavStatusBadge">❌ Not OK</span>
-        <div class="person-message" id="abhinavMsg">Bhai ghar pe hai — call mat karo!</div>
-        <button class="toggle-btn btn-off" id="abhinavBtn" onclick="togglePerson('abhinav')">
-          Tap karo status update karne ke liye
-        </button>
-        <div class="meta" id="abhinavMeta">—</div>
-      </div>
-
+    <!-- Abhinav -->
+    <div class="card off" id="abhinavCard">
+      <div class="card-avatar">👦</div>
+      <div class="card-name">Abhinav</div>
+      <span class="card-badge off" id="abhinavBadge">Not Clear</span>
+      <div class="card-msg" id="abhinavMsg">Abhinav is at home.</div>
+      <button class="tap-btn btn-off" id="abhinavBtn">Tap when you leave</button>
+      <button class="edit-link" id="abhinavEdit">✏️ edit this message</button>
+      <div class="card-meta" id="abhinavMeta"></div>
     </div>
 
-    <div class="note">Dono green ho jao toh call safe hai 📞</div>
   </div>
 
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
+  <p class="foot">Both must be clear for a safe call 📞</p>
+</div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue }
-      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+<!-- Edit message sheet -->
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sheetTitle">Edit message</div>
+    <div class="sheet-hint" id="sheetHint">Synced instantly for everyone.</div>
+    <input type="text" id="sheetInput" class="sheet-input" maxlength="60" />
+    <div class="sheet-row">
+      <button class="sheet-save" id="sheetSaveBtn">Save & Sync</button>
+      <button class="sheet-cancel" id="sheetCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
 
-    // ─── Your Firebase config ────────────────────────────────
-    const firebaseConfig = {
-      apiKey: "AIzaSyBj2s60v3ZfBNeDWUPJp0fHCHqVxfj1K3M",
-      authDomain: "test-4f67d.firebaseapp.com",
-      databaseURL: "https://test-4f67d-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "test-4f67d",
-      storageBucket: "test-4f67d.firebasestorage.app",
-      messagingSenderId: "174038039281",
-      appId: "1:174038039281:web:17ea3a9b92f11adf094750",
-      measurementId: "G-E1911MBDQC"
-    };
+<div class="toast" id="toast"></div>
 
-    // ─── Init Firebase ───────────────────────────────────────
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    const connBadge = document.getElementById('connBadge');
-    const connText = document.getElementById('connText');
+  const app = initializeApp({
+    apiKey:            "AIzaSyBj2s60v3ZfBNeDWUPJp0fHCHqVxfj1K3M",
+    authDomain:        "test-4f67d.firebaseapp.com",
+    databaseURL:       "https://test-4f67d-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId:         "test-4f67d",
+    storageBucket:     "test-4f67d.firebasestorage.app",
+    messagingSenderId: "174038039281",
+    appId:             "1:174038039281:web:17ea3a9b92f11adf094750",
+    measurementId:     "G-E1911MBDQC"
+  });
+  const db = getDatabase(app);
 
-    let state = { kavana: false, abhinav: false };
-    let lastTs = { kavana: null, abhinav: null };
+  // ── Default messages for each state ──────────────────────
+  const DEFAULTS = {
+    kavana:  { ok: 'Sis is NOT at home.',  off: 'Sis is at home.'     },
+    abhinav: { ok: 'Abhinav is outside.',  off: 'Abhinav is at home.' }
+  };
 
-    // ─── Connection indicator ────────────────────────────────
-    onValue(ref(db, '.info/connected'), snap => {
-      const online = snap.val() === true;
-      connBadge.className = 'conn-badge ' + (online ? 'connected' : 'disconnected');
-      connText.textContent = online ? 'Live sync ✦' : 'Offline';
+  // ── App state ─────────────────────────────────────────────
+  // Each person stores: ok (bool), msg_ok (string), msg_off (string), ts (number)
+  let state  = { kavana: false, abhinav: false };
+  let msgOk  = { kavana: '',    abhinav: ''    }; // shown when green
+  let msgOff = { kavana: '',    abhinav: ''    }; // shown when red
+  let ts     = { kavana: null,  abhinav: null  };
+
+  // ── Live connection indicator ─────────────────────────────
+  onValue(ref(db, '.info/connected'), snap => {
+    const on = snap.val() === true;
+    const badge = document.getElementById('liveBadge');
+    badge.className = 'live-badge ' + (on ? 'on' : 'off');
+    document.getElementById('liveText').textContent = on ? 'Live' : 'Offline';
+  });
+
+  // ── Realtime data listener ────────────────────────────────
+  onValue(ref(db, 'status'), snap => {
+    const d        = snap.val() || {};
+    state.kavana   = d.kavana?.ok      === true;
+    state.abhinav  = d.abhinav?.ok     === true;
+    msgOk.kavana   = d.kavana?.msg_ok  || '';
+    msgOk.abhinav  = d.abhinav?.msg_ok || '';
+    msgOff.kavana  = d.kavana?.msg_off  || '';
+    msgOff.abhinav = d.abhinav?.msg_off || '';
+    ts.kavana      = d.kavana?.ts      || null;
+    ts.abhinav     = d.abhinav?.ts     || null;
+    render();
+  });
+
+  // ── Wire up buttons (NO inline onclick in HTML) ───────────
+  document.getElementById('kavanaBtn').addEventListener('click', () => tapCard('kavana'));
+  document.getElementById('abhinavBtn').addEventListener('click', () => tapCard('abhinav'));
+  document.getElementById('kavanaEdit').addEventListener('click', () => openSheet('kavana'));
+  document.getElementById('abhinavEdit').addEventListener('click', () => openSheet('abhinav'));
+  document.getElementById('sheetSaveBtn').addEventListener('click', saveMsg);
+  document.getElementById('sheetCancelBtn').addEventListener('click', closeSheet);
+  document.getElementById('sheetInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveMsg(); });
+  document.getElementById('overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeSheet(); });
+
+  // ── Toggle ────────────────────────────────────────────────
+  function tapCard(person) {
+    const newVal = !state[person];
+    set(ref(db, 'status/' + person), {
+      ok:      newVal,
+      msg_ok:  msgOk[person]  || DEFAULTS[person].ok,
+      msg_off: msgOff[person] || DEFAULTS[person].off,
+      ts:      Date.now()
     });
+    showToast(person === 'kavana'
+      ? (newVal ? '✅ Safe for Kavana — marked clear!' : '🚨 Danger for Kavana — marked not clear')
+      : (newVal ? '✅ Safe for Abhinav — marked clear!' : '🚨 Danger for Abhinav — marked not clear'));
+  }
 
-    // ─── Real-time listener ──────────────────────────────────
-    onValue(ref(db, 'status'), snap => {
-      const data = snap.val() || {};
-      state.kavana = data.kavana?.ok === true;
-      state.abhinav = data.abhinav?.ok === true;
-      lastTs.kavana = data.kavana?.ts || null;
-      lastTs.abhinav = data.abhinav?.ts || null;
-      render();
-    });
+  // ── Edit message sheet ────────────────────────────────────
+  let editing = null; // { person: 'kavana'|'abhinav', field: 'ok'|'off' }
 
-    // ─── Toggle ─────────────────────────────────────────────
-    window.togglePerson = function (person) {
-      const newVal = !state[person];
-      set(ref(db, 'status/' + person), { ok: newVal, ts: Date.now() });
-      showToast(person === 'kavana'
-        ? (newVal ? '✅ Sis nahi hai — clear!' : '❌ Sis wapas aa gayi')
-        : (newVal ? '✅ Bahar hoon — clear!' : '❌ Ghar wapas aa gaya'));
-    };
+  function openSheet(person) {
+    const isOk = state[person];
+    const field = isOk ? 'ok' : 'off';
+    editing = { person, field };
 
-    // ─── Render ─────────────────────────────────────────────
-    function render() {
-      const kOk = state.kavana;
-      const aOk = state.abhinav;
-      const allOk = kOk && aOk;
-      const none = !kOk && !aOk;
+    const name  = person === 'kavana' ? "Kavana's" : "Abhinav's";
+    const when  = isOk ? 'when CLEAR (green)' : 'when NOT CLEAR (red)';
+    document.getElementById('sheetTitle').textContent = 'Edit ' + name + ' message';
+    document.getElementById('sheetHint').textContent  = 'Shown ' + when + '. Synced instantly.';
 
-      document.body.className = allOk ? 'all-ok' : (none ? 'danger' : 'pending');
+    const stored = isOk ? msgOk[person] : msgOff[person];
+    const inp = document.getElementById('sheetInput');
+    inp.value       = stored || DEFAULTS[person][field];
+    inp.placeholder = DEFAULTS[person][field];
+    document.getElementById('overlay').classList.add('open');
+    setTimeout(() => inp.focus(), 280);
+  }
 
-      const banner = document.getElementById('banner');
-      const bannerIcon = document.getElementById('bannerIcon');
-      const bannerTitle = document.getElementById('bannerTitle');
-      const bannerSub = document.getElementById('bannerSub');
+  function saveMsg() {
+    if (!editing) return;
+    const { person, field } = editing;
+    const raw = document.getElementById('sheetInput').value.trim();
+    const msg = raw || DEFAULTS[person][field];
+    const dbField = field === 'ok' ? 'msg_ok' : 'msg_off';
+    set(ref(db, 'status/' + person + '/' + dbField), msg);
+    closeSheet();
+    showToast('✅ Message saved & synced!');
+  }
 
-      if (allOk) {
-        banner.className = 'banner safe';
-        bannerIcon.textContent = '📞';
-        bannerTitle.className = 'banner-title safe';
-        bannerTitle.textContent = 'Call Karo! Safe Hai!';
-        bannerSub.textContent = 'Dono clear hain — abhi call karo! ✅';
-      } else if (none) {
-        banner.className = 'banner danger';
-        bannerIcon.textContent = '🚫';
-        bannerTitle.className = 'banner-title danger';
-        bannerTitle.textContent = 'Danger! Mat Karo Call!';
-        bannerSub.textContent = 'Dono ready nahi hain — bilkul mat karo! ❌';
-      } else {
-        banner.className = 'banner wait';
-        bannerIcon.textContent = '⚠️';
-        bannerTitle.className = 'banner-title wait';
-        bannerTitle.textContent = 'Abhi Nahi...';
-        bannerSub.textContent = 'Ek banda abhi ready nahi — thoda wait karo.';
-      }
+  function closeSheet() {
+    document.getElementById('overlay').classList.remove('open');
+    editing = null;
+  }
 
-      setCard('kavana',
-        kOk ? '✅ Clear!' : '❌ Rukoo',
-        kOk ? 'Sis ghar pe nahi hai 🙌' : 'Sis abhi ghar pe hai!',
-        kOk ? '✓ Sis is NOT home' : '☝️ Tap when sis leaves',
-        lastTs.kavana
-      );
+  // ── Render ────────────────────────────────────────────────
+  function render() {
+    const k = state.kavana, a = state.abhinav;
+    const allOk = k && a, none = !k && !a;
 
-      setCard('abhinav',
-        aOk ? '✅ Clear!' : '❌ Rukoo',
-        aOk ? 'Bhai bahar hai 🚶' : 'Bhai abhi ghar pe hai!',
-        aOk ? '✓ I am OUT of house' : '☝️ Tap when you leave',
-        lastTs.abhinav
-      );
+    document.body.className = allOk ? 'st-safe' : (none ? 'st-danger' : 'st-wait');
+
+    const banner = document.getElementById('banner');
+    const title  = document.getElementById('bannerTitle');
+    const sub    = document.getElementById('bannerSub');
+    const emoji  = document.getElementById('bannerEmoji');
+
+    if (allOk) {
+      banner.className = 'banner safe';   emoji.textContent = '📞';
+      title.className  = 'banner-title safe';   title.textContent = 'Safe to Call!';
+      sub.textContent  = 'Both Kavana and Abhinav are clear — go ahead!';
+    } else if (none) {
+      banner.className = 'banner danger'; emoji.textContent = '🚫';
+      title.className  = 'banner-title danger'; title.textContent = 'Do NOT Call';
+      sub.textContent  = 'Kavana is NOT clear  •  Abhinav is NOT clear';
+    } else {
+      banner.className = 'banner wait';   emoji.textContent = '⏳';
+      title.className  = 'banner-title wait';   title.textContent = 'Not Yet…';
+      // Say exactly who is blocking
+      const notClear = [!k ? 'Kavana' : null, !a ? 'Abhinav' : null].filter(Boolean).join(' and ');
+      sub.textContent  = notClear + (notClear.includes('and') ? ' are' : ' is') + ' NOT clear yet — wait a bit.';
     }
 
-    function setCard(person, badge, msg, btnTxt, ts) {
-      const isOk = state[person];
-      document.getElementById(person + 'Card').className = 'person-card ' + (isOk ? 'ok' : 'off');
-      const b = document.getElementById(person + 'StatusBadge');
-      b.className = 'person-status-text ' + (isOk ? 'ok' : 'off');
-      b.textContent = badge;
-      document.getElementById(person + 'Msg').textContent = msg;
-      const btn = document.getElementById(person + 'Btn');
-      btn.className = 'toggle-btn ' + (isOk ? 'btn-ok' : 'btn-off');
-      btn.textContent = btnTxt;
-      document.getElementById(person + 'Meta').textContent = ts ? 'Updated: ' + timeAgo(ts) : '—';
-    }
+    setCard('kavana',  k,
+      k ? 'Clear ✓'                      : 'Not Clear',
+      k ? (msgOk.kavana  || DEFAULTS.kavana.ok)   : (msgOff.kavana  || DEFAULTS.kavana.off),
+      k ? 'Safe for Kavana'              : 'Danger for Kavana'
+    );
+    setCard('abhinav', a,
+      a ? 'Clear ✓'               : 'Not Clear',
+      a ? (msgOk.abhinav || DEFAULTS.abhinav.ok)  : (msgOff.abhinav || DEFAULTS.abhinav.off),
+      a ? 'Safe for Abhinav'      : 'Danger for Abhinav'
+    );
+  }
 
-    // ─── Time ago ────────────────────────────────────────────
-    function timeAgo(ts) {
-      const sec = Math.floor((Date.now() - ts) / 1000);
-      if (sec < 10) return 'Abhi abhi';
-      if (sec < 60) return sec + 's pehle';
-      const min = Math.floor(sec / 60);
-      if (min < 60) return min + ' min pehle';
-      return Math.floor(min / 60) + ' ghante pehle';
-    }
-    setInterval(render, 30000); // refresh timestamps every 30s
+  function setCard(person, isOk, badge, msg, btnLabel) {
+    document.getElementById(person + 'Card').className    = 'card '      + (isOk ? 'ok'      : 'off');
+    const b = document.getElementById(person + 'Badge');
+    b.className   = 'card-badge ' + (isOk ? 'ok' : 'off');
+    b.textContent = badge;
+    document.getElementById(person + 'Msg').textContent   = msg;
+    const btn = document.getElementById(person + 'Btn');
+    btn.className   = 'tap-btn ' + (isOk ? 'btn-ok' : 'btn-off');
+    btn.textContent = btnLabel;
+    document.getElementById(person + 'Meta').textContent  =
+      ts[person] ? 'Updated ' + ago(ts[person]) : '';
+  }
 
-    // ─── Toast ───────────────────────────────────────────────
-    let toastTimer;
-    window.showToast = function (msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
-    };
-  </script>
+  // ── Helpers ───────────────────────────────────────────────
+  function ago(t) {
+    const s = Math.floor((Date.now() - t) / 1000);
+    if (s < 5)  return 'just now';
+    if (s < 60) return s + 's ago';
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + 'm ago';
+    return Math.floor(m / 60) + 'h ago';
+  }
+  setInterval(render, 30000);
+
+  let toastTimer;
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+  }
+</script>
 </body>
-
 </html>
