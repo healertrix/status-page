@@ -435,6 +435,112 @@
     .chat-send:hover { transform: scale(1.07); box-shadow: 0 4px 14px rgba(99,102,241,0.45); }
     .chat-send:active { transform: scale(0.94); }
     .chat-send:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+    /* clear-chat button */
+    .chat-clear-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 1rem;
+      padding: 4px 6px; border-radius: 8px;
+      transition: color 0.2s; margin-top: 4px; flex-shrink: 0;
+    }
+    .chat-clear-btn:hover { color: var(--red); }
+
+    /* confirm bar (slides down inside header) */
+    .chat-confirm-bar {
+      padding: 8px 18px 10px;
+      display: flex; align-items: center; gap: 8px;
+      flex-shrink: 0; border-bottom: 1px solid var(--border);
+      background: rgba(239,68,68,0.06);
+      overflow: hidden; max-height: 0;
+      transition: max-height 0.28s ease, padding 0.28s ease;
+    }
+    .chat-confirm-bar.show { max-height: 60px; }
+    .chat-confirm-bar.hide { max-height: 0; padding-top:0; padding-bottom:0; }
+    .confirm-text {
+      font-size: 0.78rem; color: var(--muted); flex: 1; font-weight: 600;
+    }
+    .confirm-yes {
+      padding: 5px 12px; border-radius: 8px; border: none;
+      background: var(--red); color: #fff;
+      font-size: 0.75rem; font-weight: 700; font-family: 'Inter', sans-serif;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .confirm-yes:hover { opacity: 0.85; }
+    .confirm-no {
+      padding: 5px 10px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--muted); font-size: 0.75rem; font-weight: 700;
+      font-family: 'Inter', sans-serif; cursor: pointer; transition: color 0.2s;
+    }
+    .confirm-no:hover { color: var(--text); }
+
+    /* hide FAB while chat is open */
+    .chat-fab.hidden { opacity: 0; pointer-events: none; transform: scale(0.7); }
+
+    /* ── Identity modal ─────────────────────────────────────── */
+    .id-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; z-index: 500;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .id-overlay.open { opacity: 1; pointer-events: all; }
+    .id-modal {
+      background: #13131f;
+      border: 1px solid rgba(255,255,255,0.11);
+      border-radius: 24px; padding: 36px 28px 28px;
+      width: 100%; max-width: 360px; text-align: center;
+      transform: translateY(24px) scale(0.96);
+      transition: transform 0.38s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .id-overlay.open .id-modal { transform: none; }
+    .id-modal-icon { font-size: 2.8rem; margin-bottom: 12px; }
+    .id-modal-title { font-size: 1.15rem; font-weight: 900; margin-bottom: 6px; }
+    .id-modal-sub {
+      font-size: 0.82rem; color: var(--muted); margin-bottom: 26px; line-height: 1.5;
+    }
+    .id-choices { display: flex; gap: 12px; }
+    .id-choice {
+      flex: 1; padding: 18px 10px;
+      border-radius: 16px; border: 1.5px solid var(--border);
+      background: var(--surface2); cursor: pointer;
+      font-family: 'Inter', sans-serif; font-weight: 800;
+      font-size: 0.92rem; color: var(--text);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      transition: all 0.22s;
+    }
+    .id-choice:hover { border-color: rgba(255,255,255,0.25); background: var(--surface); }
+    .id-choice .id-avatar { font-size: 2.2rem; }
+    .id-choice.kavana:hover  { border-color: rgba(99,102,241,0.6); color: #a5b4fc; }
+    .id-choice.abhinav:hover { border-color: rgba(245,158,11,0.5); color: #fcd34d; }
+
+    /* locked badge inside chat header */
+    .chat-identity-tag {
+      font-size: 0.72rem; font-weight: 700;
+      padding: 4px 10px; border-radius: 999px;
+      flex-shrink: 0;
+    }
+    .chat-identity-tag.kavana  { background: rgba(99,102,241,0.18); color: #a5b4fc; }
+    .chat-identity-tag.abhinav { background: rgba(245,158,11,0.15); color: #fcd34d; }
+
+    /* locked card overlay */
+    .card-locked {
+      position: absolute; inset: 0; border-radius: 18px;
+      display: flex; align-items: flex-end; justify-content: center;
+      padding-bottom: 14px; pointer-events: none; opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .card.locked .card-locked { opacity: 1; pointer-events: all; }
+    .card.locked .tap-btn,
+    .card.locked .edit-link { opacity: 0.25; pointer-events: none; cursor: not-allowed; }
+    .lock-label {
+      font-size: 0.65rem; font-weight: 700; color: var(--muted);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 999px; padding: 3px 10px;
+    }
   </style>
 </head>
 <body class="st-wait">
@@ -467,6 +573,7 @@
       <button class="tap-btn btn-off" id="kavanaBtn">Tap when sis leaves</button>
       <button class="edit-link" id="kavanaEdit">✏️ edit this message</button>
       <div class="card-meta" id="kavanaMeta"></div>
+      <div class="card-locked"><span class="lock-label">🔒 Kavana only</span></div>
     </div>
 
     <!-- Abhinav -->
@@ -478,6 +585,7 @@
       <button class="tap-btn btn-off" id="abhinavBtn">Tap when you leave</button>
       <button class="edit-link" id="abhinavEdit">✏️ edit this message</button>
       <div class="card-meta" id="abhinavMeta"></div>
+      <div class="card-locked"><span class="lock-label">🔒 Abhinav only</span></div>
     </div>
 
   </div>
@@ -501,6 +609,25 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Identity modal (shown on first visit) -->
+<div class="id-overlay" id="idOverlay">
+  <div class="id-modal">
+    <div class="id-modal-icon">👋</div>
+    <div class="id-modal-title">Who are you?</div>
+    <div class="id-modal-sub">Pick once — we'll remember you on this device.</div>
+    <div class="id-choices">
+      <button class="id-choice kavana" id="pickKavana">
+        <span class="id-avatar">👧</span>
+        Kavana
+      </button>
+      <button class="id-choice abhinav" id="pickAbhinav">
+        <span class="id-avatar">👦</span>
+        Abhinav
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Chat FAB -->
 <button class="chat-fab" id="chatFab" aria-label="Open chat">
   💬
@@ -511,14 +638,16 @@
 <div class="chat-panel" id="chatPanel">
   <div class="chat-header">
     <div class="chat-header-drag"></div>
-    <div class="chat-title">💬 Quick Chat</div>
+    <div class="chat-title">💬 Chat</div>
+    <span class="chat-identity-tag" id="chatIdentityTag"></span>
+    <button class="chat-clear-btn" id="chatClearBtn" title="Clear all messages">🗑️</button>
     <button class="chat-close" id="chatClose">✕</button>
   </div>
-
-  <!-- Sender pick -->
-  <div class="sender-pick">
-    <button class="sender-btn" id="senderKavana" data-sender="kavana">👧 Kavana</button>
-    <button class="sender-btn" id="senderAbhinav" data-sender="abhinav">👦 Abhinav</button>
+  <!-- Confirm bar -->
+  <div class="chat-confirm-bar hide" id="chatConfirmBar">
+    <span class="confirm-text">Delete all messages for everyone?</span>
+    <button class="confirm-no"  id="confirmNo">Cancel</button>
+    <button class="confirm-yes" id="confirmYes">Yes, Clear</button>
   </div>
 
   <!-- Messages -->
@@ -532,13 +661,13 @@
   <!-- Input bar -->
   <div class="chat-input-bar">
     <textarea class="chat-input" id="chatInput" placeholder="Type a message…" rows="1" maxlength="300"></textarea>
-    <button class="chat-send" id="chatSendBtn" disabled aria-label="Send">➤</button>
+    <button class="chat-send" id="chatSendBtn" aria-label="Send">➤</button>
   </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue, push, query, limitToLast }
+  import { getDatabase, ref, set, onValue, push, query, limitToLast, onChildAdded, remove }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const app = initializeApp({
@@ -565,6 +694,9 @@
   let msgOk  = { kavana: '',    abhinav: ''    }; // shown when green
   let msgOff = { kavana: '',    abhinav: ''    }; // shown when red
   let ts     = { kavana: null,  abhinav: null  };
+
+  // Identity — read now, applied after chat vars are ready (see CHAT section)
+  let myIdentity = localStorage.getItem('stc_identity'); // 'kavana' | 'abhinav' | null
 
   // ── Live connection indicator ─────────────────────────────
   onValue(ref(db, '.info/connected'), snap => {
@@ -600,6 +732,10 @@
 
   // ── Toggle ────────────────────────────────────────────────
   function tapCard(person) {
+    if (myIdentity && myIdentity !== person) {
+      showToast('🔒 You can only update your own status');
+      return;
+    }
     const newVal = !state[person];
     set(ref(db, 'status/' + person), {
       ok:      newVal,
@@ -616,6 +752,10 @@
   let editing = null; // { person: 'kavana'|'abhinav', field: 'ok'|'off' }
 
   function openSheet(person) {
+    if (myIdentity && myIdentity !== person) {
+      showToast('🔒 You can only edit your own messages');
+      return;
+    }
     const isOk = state[person];
     const field = isOk ? 'ok' : 'off';
     editing = { person, field };
@@ -690,7 +830,10 @@
   }
 
   function setCard(person, isOk, badge, msg, btnLabel) {
-    document.getElementById(person + 'Card').className    = 'card '      + (isOk ? 'ok'      : 'off');
+    const card = document.getElementById(person + 'Card');
+    // Preserve the 'locked' class — render() must not wipe it
+    const locked = card.classList.contains('locked') ? ' locked' : '';
+    card.className = 'card ' + (isOk ? 'ok' : 'off') + locked;
     const b = document.getElementById(person + 'Badge');
     b.className   = 'card-badge ' + (isOk ? 'ok' : 'off');
     b.textContent = badge;
@@ -724,46 +867,64 @@
   // ══════════════════════════════════════════════════════════
   // CHAT
   // ══════════════════════════════════════════════════════════
-  let chatOpen    = false;
-  let activeSender = null;   // 'kavana' | 'abhinav'
+  let chatOpen     = false;
+  let activeSender = null;   // set by applyIdentity()
   let unreadCount  = 0;
-  let lastSeenTs   = 0;      // epoch ms of last message seen while panel was closed
+  let lastSeenTs   = 0;
 
-  const chatPanel    = document.getElementById('chatPanel');
-  const chatFab      = document.getElementById('chatFab');
-  const chatClose    = document.getElementById('chatClose');
-  const chatMessages = document.getElementById('chatMessages');
-  const chatEmpty    = document.getElementById('chatEmpty');
-  const chatInput    = document.getElementById('chatInput');
-  const chatSendBtn  = document.getElementById('chatSendBtn');
-  const chatUnread   = document.getElementById('chatUnread');
+  const chatPanel      = document.getElementById('chatPanel');
+  const chatFab        = document.getElementById('chatFab');
+  const chatClose      = document.getElementById('chatClose');
+  const chatMessages   = document.getElementById('chatMessages');
+  const chatEmpty      = document.getElementById('chatEmpty');
+  const chatInput      = document.getElementById('chatInput');
+  const chatSendBtn    = document.getElementById('chatSendBtn');
+  const chatUnread     = document.getElementById('chatUnread');
+  const chatClearBtn   = document.getElementById('chatClearBtn');
+  const chatConfirmBar = document.getElementById('chatConfirmBar');
 
   chatFab.addEventListener('click',  openChat);
   chatClose.addEventListener('click', closeChat);
+  chatClearBtn.addEventListener('click', () => {
+    chatConfirmBar.className = 'chat-confirm-bar show';
+    chatConfirmBar.style.maxHeight = '';   // let CSS class control height
+  });
+  document.getElementById('confirmNo').addEventListener('click', hideConfirm);
+  document.getElementById('confirmYes').addEventListener('click', clearAllChat);
 
-  // sender selection
-  document.getElementById('senderKavana').addEventListener('click',  () => setSender('kavana'));
-  document.getElementById('senderAbhinav').addEventListener('click', () => setSender('abhinav'));
+  function hideConfirm() {
+    chatConfirmBar.className = 'chat-confirm-bar hide';
+    chatConfirmBar.style.maxHeight = '';   // clear inline override so CSS collapses it
+  }
 
-  function setSender(s) {
-    activeSender = s;
-    document.getElementById('senderKavana').className  = 'sender-btn' + (s === 'kavana'  ? ' active-kavana'  : '');
-    document.getElementById('senderAbhinav').className = 'sender-btn' + (s === 'abhinav' ? ' active-abhinav' : '');
-    chatInput.placeholder = s === 'kavana' ? 'Kavana says…' : 'Abhinav says…';
-    updateSendBtn();
-    chatInput.focus();
+  function clearAllChat() {
+    hideConfirm();
+    // Wipe Firebase
+    remove(ref(db, 'chat')).catch(err => showToast('⚠️ Clear failed: ' + err.message));
+    // Wipe UI immediately — onChildAdded won't re-fire for deleted data
+    Array.from(chatMessages.children).forEach(el => {
+      if (el !== chatEmpty) el.remove();
+    });
+    chatEmpty.style.display = 'flex';
+    unreadCount = 0;
+    updateUnread();
+    showToast('🗑️ Chat cleared for everyone');
   }
 
   function openChat() {
     chatOpen = true;
     chatPanel.classList.add('open');
+    chatFab.classList.add('hidden');   // hide FAB so send btn is never blocked
     unreadCount = 0;
     updateUnread();
     scrollChatBottom();
+    setTimeout(() => chatInput.focus(), 320);
   }
   function closeChat() {
     chatOpen = false;
     chatPanel.classList.remove('open');
+    chatFab.classList.remove('hidden');
+    hideConfirm();  // dismiss confirm bar if open
   }
 
   // auto-resize textarea
@@ -791,44 +952,82 @@
       sender: activeSender,
       text,
       ts: Date.now()
+    }).catch(err => {
+      showToast('⚠️ Failed to send: ' + (err.message || 'check Firebase rules'));
+      chatInput.value = text;          // restore text so user doesn’t lose it
+      chatInput.style.height = 'auto';
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 110) + 'px';
+      updateSendBtn();
     });
     scrollChatBottom();
   }
 
-  // listen to last 60 messages
-  const chatQuery = query(ref(db, 'chat'), limitToLast(60));
-  const renderedKeys = new Set();
+  // ── Identity — applied HERE, after chat vars & helpers are ready ───
+  function applyIdentity(id) {
+    myIdentity = id;
+    localStorage.setItem('stc_identity', id);
 
-  onValue(chatQuery, snap => {
-    if (!snap.exists()) { chatEmpty.style.display = ''; return; }
+    // Lock the card that doesn't belong to this user
+    const other = id === 'kavana' ? 'abhinav' : 'kavana';
+    document.getElementById(other + 'Card').classList.add('locked');
+    document.getElementById(id + 'Card').classList.remove('locked');
+
+    // Chat identity tag
+    const tag = document.getElementById('chatIdentityTag');
+    tag.textContent = id === 'kavana' ? '👧 Kavana' : '👦 Abhinav';
+    tag.className   = 'chat-identity-tag ' + id;
+
+    // Wire up activeSender + placeholder now that chatInput exists
+    activeSender = id;
+    chatInput.placeholder = id === 'kavana' ? 'Kavana says…' : 'Abhinav says…';
+    updateSendBtn();
+  }
+
+  const idOverlay = document.getElementById('idOverlay');
+  if (!myIdentity) {
+    idOverlay.classList.add('open');
+  } else {
+    applyIdentity(myIdentity);
+  }
+
+  document.getElementById('pickKavana').addEventListener('click', () => {
+    idOverlay.classList.remove('open');
+    applyIdentity('kavana');
+  });
+  document.getElementById('pickAbhinav').addEventListener('click', () => {
+    idOverlay.classList.remove('open');
+    applyIdentity('abhinav');
+  });
+
+  // ── Firebase: chat (onChildAdded fires once per message, no dedup needed) ──
+  const chatQuery = query(ref(db, 'chat'), limitToLast(60));
+  let chatLoaded  = false;  // becomes true after initial batch renders
+
+  onChildAdded(chatQuery, snap => {
+    const msg = Object.assign({ key: snap.key }, snap.val());
+
+    // Hide empty state on first real message
     chatEmpty.style.display = 'none';
 
-    const entries = [];
-    snap.forEach(child => entries.push({ key: child.key, ...child.val() }));
+    appendBubble(msg);
 
-    entries.forEach(msg => {
-      if (renderedKeys.has(msg.key)) return;
-      renderedKeys.add(msg.key);
-      appendBubble(msg);
-
-      // unread logic
-      if (!chatOpen && msg.ts > lastSeenTs) {
-        unreadCount++;
-        updateUnread();
-      }
-      lastSeenTs = Math.max(lastSeenTs, msg.ts || 0);
-    });
-
-    if (chatOpen) { scrollChatBottom(); unreadCount = 0; updateUnread(); }
+    if (!chatOpen) {
+      unreadCount++;
+      updateUnread();
+    } else {
+      scrollChatBottom();
+      unreadCount = 0;
+      updateUnread();
+    }
+  }, err => {
+    console.error('[Chat] onChildAdded error:', err.code, err.message);
   });
 
   function appendBubble(msg) {
-    // Treat as "right" bubble if this browser's active sender is the same person
-    // (both users see their own messages on the right side)
-    // Since we don't have auth, we just use activeSender for side assignment per session.
-    // Actually: let's always show Abhinav on right (owner's perspective) and Kavana on left.
+    // Show the current user's own messages on the right, the other person on the left
+    const isMine   = msg.sender === myIdentity;
+    const side     = isMine ? 'right' : 'left';
     const isAbhinav = msg.sender === 'abhinav';
-    const side      = isAbhinav ? 'right' : 'left';
 
     const row = document.createElement('div');
     row.className = `msg-row ${side}${isAbhinav ? ' is-abhinav' : ''}`;
